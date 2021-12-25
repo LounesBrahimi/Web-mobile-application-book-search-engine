@@ -1,7 +1,9 @@
 from rest_framework.serializers import ModelSerializer
-from mytig.models import ProduitEnPromotion
+from mytig.models import Book
 
-class ProduitEnPromotionSerializer(ModelSerializer):
+
+
+class BookSerializer(ModelSerializer):
     class Meta:
-        model = ProduitEnPromotion
-        fields = ('id', 'tigID')
+        model = Book
+        fields = ['id', 'title', 'author', 'language', 'text']

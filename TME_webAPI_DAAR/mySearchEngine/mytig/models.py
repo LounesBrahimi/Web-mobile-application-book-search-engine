@@ -1,9 +1,13 @@
 from django.db import models
 
-# Create your models here.
-class ProduitEnPromotion(models.Model):
+class Book(models.Model):
+    #Release_Date = models.DateTimeField(auto_now_add=True)
     created = models.DateTimeField(auto_now_add=True)
-    tigID = models.IntegerField(default='-1')
+    title = models.CharField(max_length=100, blank=True, default='title')
+    author = models.CharField(max_length=100, blank=True, default='author')
+    language = models.CharField(max_length=20, blank=True, default='Language')
+    text = models.TextField()
 
     class Meta:
-        ordering = ('tigID',)
+        ordering = ['created']
+    

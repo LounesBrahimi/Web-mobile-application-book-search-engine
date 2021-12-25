@@ -1,63 +1,48 @@
-import requests
-from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from mytig.config import baseUrl
-
-# Create your views here.
-class RedirectionListeDeProduits(APIView):
-    def get(self, request, format=None):
-        response = requests.get(baseUrl+'products/')
-        jsondata = response.json()
-        return Response(jsondata)
-#    def post(self, request, format=None):
-#        NO DEFITION of post --> server will return "405 NOT ALLOWED"
-
-class RedirectionDetailProduit(APIView):
-    def get(self, request, pk, format=None):
-        try:
-            response = requests.get(baseUrl+'product/'+str(pk)+'/')
-            jsondata = response.json()
-            return Response(jsondata)
-        except:
-            raise Http404
-#    def put(self, request, pk, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
+from mytig.models import Book
+from mytig.serializers import BookSerializer
 
 
+@api_view(['GET', 'POST'])
+def book_list(request, format=None):
+    """
+    List all books, or create a new book.
+    """
+    if request.method == 'GET':
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
 
-from mytig.models import ProduitEnPromotion
-from mytig.serializers import ProduitEnPromotionSerializer
-from django.http import Http404
-from django.http import JsonResponse
+    elif request.method == 'POST':
+        serializer = BookSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PromoList(APIView):
-    def get(self, request, format=None):
-        res=[]
-        for prod in ProduitEnPromotion.objects.all():
-            serializer = ProduitEnPromotionSerializer(prod)
-            response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-            jsondata = response.json()
-            res.append(jsondata)
-        return JsonResponse(res, safe=False)
-#    def post(self, request, format=None):
-#        NO DEFITION of post --> server will return "405 NOT ALLOWED"
+@api_view(['GET', 'PUT', 'DELETE'])
+def book_detail(request, pk, format=None):
+    """
+    Retrieve, update or delete a Book.
+    """
+    try:
+        book = Book.objects.get(pk=pk)
+    except Book.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-class PromoDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return ProduitEnPromotion.objects.get(pk=pk)
-        except ProduitEnPromotion.DoesNotExist:
-            raise Http404
+    if request.method == 'GET':
+        serializer = BookSerializer(book)
+        return Response(serializer.data)
 
-    def get(self, request, pk, format=None):
-        prod = self.get_object(pk)
-        serializer = ProduitEnPromotionSerializer(prod)
-        response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-        jsondata = response.json()
-        return Response(jsondata)
-#    def put(self, request, pk, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
+    elif request.method == 'PUT':
+        serializer = BookSerializer(book, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        book.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

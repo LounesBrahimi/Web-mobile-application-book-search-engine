@@ -1,9 +1,10 @@
 from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
 from mytig import views
 
 urlpatterns = [
-    path('products/', views.RedirectionListeDeProduits.as_view()),
-    path('product/<int:pk>/', views.RedirectionDetailProduit.as_view()),
-    path('onsaleproducts/', views.PromoList.as_view()),
-    path('onsaleproduct/<int:pk>/', views.PromoDetail.as_view()),
+    path('books/', views.book_list),
+    path('books/<int:pk>/', views.book_detail),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
